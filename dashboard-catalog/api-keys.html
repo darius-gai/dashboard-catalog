@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Dev Dashboard - API Keys</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="logo-section">
+                <img src="https://cdn.shopify.com/shopifycloud/shopify/assets/developer_dashboard/DevDashLogo-8818caf32c18eb9446a6b066b404e31fc335ad016860f250a2e431346530e4a5.svg" alt="dev dashboard" class="dev-dash-logo">
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar" data-page="api-keys"></div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Content Header with Back Button -->
+                <div class="content-header-with-back">
+                    <a href="index.html" class="back-button">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                    <h1 class="content-title">API keys</h1>
+                    <button class="get-api-key-btn" id="createTokenBtn">Create API key</button>
+                </div>
+
+                <!-- Token List -->
+                <div class="simple-token-list" id="tokenList">
+                    <!-- Tokens will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create API Key Modal -->
+    <div class="modal-overlay" id="createKeyModal" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title">Get an API key</h2>
+                <button class="modal-close-btn" id="closeModalBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-form-group">
+                    <label class="modal-label">Name</label>
+                    <div class="modal-input-wrapper">
+                        <input type="text" class="modal-input" id="keyNameInput" maxlength="100" placeholder="">
+                        <span class="modal-char-counter" id="charCounter">0/100</span>
+                    </div>
+                    <p class="modal-hint">Internal only, won't be shown to merchants</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-cancel-btn" id="cancelModalBtn">Cancel</button>
+                <button class="modal-create-btn" id="confirmCreateBtn">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <script>
+        // Token Management System
+        class TokenManager {
+            constructor() {
+                this.tokens = this.loadTokens();
+                this.selectedTokenId = null;
+                this.init();
+            }
+
+            init() {
+                this.renderTokenList();
+                this.attachEventListeners();
+            }
+
+            loadTokens() {
+                // Load keys from localStorage or create initial key
+                const stored = localStorage.getItem('catalogTokens');
+                if (stored) {
+                    return JSON.parse(stored);
+                } else {
+                    // Create initial default key
+                    const defaultToken = {
+                        id: this.generateId(),
+                        name: 'Default Key',
+                        token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJTaG9waWZ5Iiwic3ViIjoiOTRmM2Q1ZThjNTk3Mjc3YThkYzc4MWQ2MWNlYzQ0MDYiLCJpYXQiOjE3NjMwODM2ODksIm5iZiI6MTc2MzA4MzY4OSwiZXhwIjoxNzYzMDg3Mjg5LCJzY29wZXMiOiJyZWFkX2dsb2JhbF9hcGlfY2F0YWxvZ19zZWFyY2ggd3JpdGVfZ2xvYmFsX2FwaV91bml2ZXJzYWxfY2FydCIsImp0aSI6ImE4ZmJlNzVkLTZiYjUtNGNjYi05ZDJhLTg3NDk1N2QyZjQ1OCIsImxpbWl0cyI6eyJjYXJ0Ijp7Im1heCI6MTAwLCJwZXJpb2QiOjM2MDB9LCJjYXRhbG9nIjp7Im1heCI6MTAwLCJwZXJpb2QiOjM2MDB9fX0.cD4a2rKeByqTwLInl_KpOdX9jcjEAxPeeRTd3_oU505NXv9p49RmphyWSbPajQdVYKqq9gDZ6rYJzE3pvuXRcw',
+                        created: new Date().toISOString(),
+                        lastUsed: new Date().toISOString()
+                    };
+                    return [defaultToken];
+                }
+            }
+
+            saveTokens() {
+                localStorage.setItem('catalogTokens', JSON.stringify(this.tokens));
+            }
+
+            generateId() {
+                return 'tok_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            generateRandomBase64UrlString(length) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            generateJWTToken() {
+                const header = this.generateRandomBase64UrlString(36);
+                const payload = this.generateRandomBase64UrlString(400);
+                const signature = this.generateRandomBase64UrlString(86);
+                return `${header}.${payload}.${signature}`;
+            }
+
+            createToken(name) {
+                const token = {
+                    id: this.generateId(),
+                    name: name || `Key ${this.tokens.length + 1}`,
+                    token: this.generateJWTToken(),
+                    created: new Date().toISOString(),
+                    lastUsed: new Date().toISOString()
+                };
+                this.tokens.push(token);
+                this.saveTokens();
+                this.renderTokenList();
+                return token;
+            }
+
+            renderTokenList() {
+                const tokenList = document.getElementById('tokenList');
+                if (!tokenList) return;
+
+                if (this.tokens.length === 0) {
+                    tokenList.innerHTML = '<div class="token-empty-state">No keys yet. Create your first key to get started.</div>';
+                    return;
+                }
+
+                tokenList.innerHTML = this.tokens.map(token => {
+                    const createdDate = new Date(token.created);
+                    const formattedDate = createdDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                    });
+                    
+                    return `
+                        <a href="api-key-details.html?id=${token.id}" class="simple-token-card">
+                            <div class="simple-token-info">
+                                <h3 class="simple-token-name">${this.escapeHtml(token.name)}</h3>
+                                <p class="simple-token-created">Created ${formattedDate}</p>
+                            </div>
+                        </a>
+                    `;
+                }).join('');
+            }
+
+            escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            showCreateModal() {
+                const modal = document.getElementById('createKeyModal');
+                const input = document.getElementById('keyNameInput');
+                const charCounter = document.getElementById('charCounter');
+                
+                // Reset input
+                input.value = '';
+                charCounter.textContent = '0/100';
+                
+                // Show modal
+                modal.style.display = 'flex';
+                
+                // Focus input
+                setTimeout(() => input.focus(), 100);
+            }
+
+            hideCreateModal() {
+                const modal = document.getElementById('createKeyModal');
+                modal.style.display = 'none';
+            }
+
+            attachEventListeners() {
+                // Create Token button
+                const createBtn = document.getElementById('createTokenBtn');
+                if (createBtn) {
+                    createBtn.addEventListener('click', () => {
+                        this.showCreateModal();
+                    });
+                }
+
+                // Modal close button
+                const closeBtn = document.getElementById('closeModalBtn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        this.hideCreateModal();
+                    });
+                }
+
+                // Modal cancel button
+                const cancelBtn = document.getElementById('cancelModalBtn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        this.hideCreateModal();
+                    });
+                }
+
+                // Modal create button
+                const confirmBtn = document.getElementById('confirmCreateBtn');
+                if (confirmBtn) {
+                    confirmBtn.addEventListener('click', () => {
+                        const input = document.getElementById('keyNameInput');
+                        const name = input.value.trim();
+                        
+                        if (name) {
+                            const newToken = this.createToken(name);
+                            this.hideCreateModal();
+                            // Navigate to details page
+                            window.location.href = `api-key-details.html?id=${newToken.id}`;
+                        } else {
+                            alert('Please enter a name for your API key');
+                        }
+                    });
+                }
+
+                // Character counter
+                const input = document.getElementById('keyNameInput');
+                const charCounter = document.getElementById('charCounter');
+                if (input && charCounter) {
+                    input.addEventListener('input', () => {
+                        charCounter.textContent = `${input.value.length}/100`;
+                    });
+
+                    // Handle Enter key
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            document.getElementById('confirmCreateBtn').click();
+                        }
+                    });
+                }
+
+                // Close modal when clicking outside
+                const modal = document.getElementById('createKeyModal');
+                if (modal) {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            this.hideCreateModal();
+                        }
+                    });
+                }
+
+                // Close modal with Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.hideCreateModal();
+                    }
+                });
+            }
+        }
+
+        // Initialize token manager when DOM is ready
+        let tokenManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            tokenManager = new TokenManager();
+        });
+    </script>
+
+    <!-- Checkout Coming Soon Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-modal-container">
+            <div class="checkout-modal-header">
+                <h2 class="checkout-modal-title">
+                    Checkout
+                    <span class="checkout-coming-soon-pill">Coming Soon</span>
+                </h2>
+                <button class="checkout-modal-close" onclick="hideCheckoutModal()" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="checkout-modal-body">
+                <img src="https://cdn.shopify.com/b/shopify-brochure2-assets/93d6a423270df1aaf36f348c2ad193d0.png" alt="Checkout Kit preview showing checkout on mobile, tablet and desktop" class="checkout-modal-image" />
+                <div class="checkout-modal-content">
+                    <p class="checkout-modal-description">
+                        Checkout is often the hardest step due to merchant customizations and regulations. 
+                        <span class="checkout-modal-highlight">Shopify's Checkout Kit</span> handles this for you. 
+                        With a few lines of code, you get a high-converting checkout that preserves all your customizations and business rules.
+                    </p>
+                    <div class="checkout-features-list">
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Brand overrides for native look on any platform</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Checkout UI Extensions and Shopify Functions preserved</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Taxes automatically handled</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Compliance simplified (GDPR, CCPA, WCAG, PCI DSS v4)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

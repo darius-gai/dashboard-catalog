@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Dev Dashboard - Home</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="logo-section">
+                <img src="https://cdn.shopify.com/shopifycloud/shopify/assets/developer_dashboard/DevDashLogo-8818caf32c18eb9446a6b066b404e31fc335ad016860f250a2e431346530e4a5.svg" alt="dev dashboard" class="dev-dash-logo">
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar" data-page="home"></div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Content Header -->
+                <div class="content-header">
+                    <h1 class="content-title">Home</h1>
+                </div>
+
+                <!-- Sections Grid -->
+                <div class="sections-grid">
+                    <!-- Apps Section -->
+                    <div class="section-card section-card-apps">
+                        <div class="section-content">
+                            <h2 class="section-title section-title-apps">Apps</h2>
+                            <p class="section-description">Extend Shopify's core functionality with apps that integrate into Shopify's admin, online store, checkout and more.</p>
+                            <a href="apps.html" class="section-btn">View your apps →</a>
+                        </div>
+                        <div class="section-illustration">
+                            <img src="https://shopify.dev/images/docs/apps-mobile-dark-2x.png" alt="Apps illustration" class="section-img">
+                        </div>
+                    </div>
+
+                    <!-- Dev Stores Section -->
+                    <div class="section-card section-card-stores">
+                        <div class="section-content">
+                            <h2 class="section-title section-title-stores">Dev stores</h2>
+                            <p class="section-description">Create and manage development stores to test your apps and themes in a full-featured Shopify environment.</p>
+                            <a href="#" class="section-btn">Manage dev stores →</a>
+                        </div>
+                        <div class="section-illustration">
+                            <img src="https://shopify.dev/images/docs/headless-mobile-dark-2x.png" alt="Dev stores illustration" class="section-img">
+                        </div>
+                    </div>
+
+                    <!-- Catalog Section -->
+                    <div class="section-card section-card-catalog">
+                        <div class="section-content">
+                            <h2 class="section-title section-title-catalog">Catalog</h2>
+                            <p class="section-description">Discover and search through Shopify's catalog to find products and resources for your store development.</p>
+                            <a href="catalogs.html" class="section-btn">Explore catalog →</a>
+                        </div>
+                        <div class="section-illustration">
+                            <img src="https://cdn.shopify.com/shopifycloud/shopify-dev/production/assets/assets/images/marketing-page-heroes/agents-hero-dark-mode-B06Cay3-.png" alt="Catalog illustration" class="section-img">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Coming Soon Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-modal-container">
+            <div class="checkout-modal-header">
+                <h2 class="checkout-modal-title">
+                    Checkout
+                    <span class="checkout-coming-soon-pill">Coming Soon</span>
+                </h2>
+                <button class="checkout-modal-close" onclick="hideCheckoutModal()" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="checkout-modal-body">
+                <img src="https://cdn.shopify.com/b/shopify-brochure2-assets/93d6a423270df1aaf36f348c2ad193d0.png" alt="Checkout Kit preview showing checkout on mobile, tablet and desktop" class="checkout-modal-image" />
+                <div class="checkout-modal-content">
+                    <p class="checkout-modal-description">
+                        Checkout is often the hardest step due to merchant customizations and regulations. 
+                        <span class="checkout-modal-highlight">Shopify's Checkout Kit</span> handles this for you. 
+                        With a few lines of code, you get a high-converting checkout that preserves all your customizations and business rules.
+                    </p>
+                    <div class="checkout-features-list">
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Brand overrides for native look on any platform</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Checkout UI Extensions and Shopify Functions preserved</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Taxes automatically handled</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Compliance simplified (GDPR, CCPA, WCAG, PCI DSS v4)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Dev Dashboard - Catalogs</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="logo-section">
+                <img src="https://cdn.shopify.com/shopifycloud/shopify/assets/developer_dashboard/DevDashLogo-8818caf32c18eb9446a6b066b404e31fc335ad016860f250a2e431346530e4a5.svg" alt="dev dashboard" class="dev-dash-logo">
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar" data-page="catalog"></div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Content Header -->
+                <div class="catalogs-header">
+                    <h1 class="content-title">Catalogs</h1>
+                    <div class="catalogs-header-actions">
+                        <button class="get-api-key-btn" id="getApiKeysBtn">Get API keys</button>
+                        <button class="get-api-key-btn" id="createCatalogBtn">Create catalog</button>
+                    </div>
+                </div>
+
+                <!-- Catalog List -->
+                <div class="catalog-list" id="catalogList">
+                    <!-- Catalogs will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Checkout Coming Soon Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-modal-container">
+            <div class="checkout-modal-header">
+                <h2 class="checkout-modal-title">
+                    Checkout
+                    <span class="checkout-coming-soon-pill">Coming Soon</span>
+                </h2>
+                <button class="checkout-modal-close" onclick="hideCheckoutModal()" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="checkout-modal-body">
+                <img src="https://cdn.shopify.com/b/shopify-brochure2-assets/93d6a423270df1aaf36f348c2ad193d0.png" alt="Checkout Kit preview showing checkout on mobile, tablet and desktop" class="checkout-modal-image" />
+                <div class="checkout-modal-content">
+                    <p class="checkout-modal-description">
+                        Checkout is often the hardest step due to merchant customizations and regulations. 
+                        <span class="checkout-modal-highlight">Shopify's Checkout Kit</span> handles this for you. 
+                        With a few lines of code, you get a high-converting checkout that preserves all your customizations and business rules.
+                    </p>
+                    <div class="checkout-features-list">
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Brand overrides for native look on any platform</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Checkout UI Extensions and Shopify Functions preserved</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Taxes automatically handled</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Compliance simplified (GDPR, CCPA, WCAG, PCI DSS v4)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <script>
+        class CatalogListManager {
+            constructor() {
+                this.catalogs = this.loadCatalogs();
+                this.init();
+            }
+
+            init() {
+                this.renderCatalogList();
+                this.attachEventListeners();
+            }
+
+            loadCatalogs() {
+                const stored = localStorage.getItem('catalogs');
+                if (stored) {
+                    return JSON.parse(stored);
+                } else {
+                    // Create default catalogs matching the screenshot
+                    const defaultCatalogs = [
+                        {
+                            id: 'cat_hoodies_us',
+                            name: 'Hoodies-US',
+                            url: 'https://discover.shopifyapps.com/global/v1/search?query=hoodies',
+                            shortUrl: 'https://discover.shopifyapps/global/v1/01ARZ3NDEKTSV4RRFFQ69G5FAV',
+                            created: new Date().toISOString()
+                        }
+                    ];
+                    this.saveCatalogs(defaultCatalogs);
+                    return defaultCatalogs;
+                }
+            }
+
+            saveCatalogs(catalogs) {
+                localStorage.setItem('catalogs', JSON.stringify(catalogs || this.catalogs));
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                if (diffMins < 1) return 'Created just now';
+                if (diffMins < 60) return `Created ${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+                
+                const diffHours = Math.floor(diffMins / 60);
+                if (diffHours < 24) return `Created ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                
+                const diffDays = Math.floor(diffHours / 24);
+                if (diffDays < 30) return `Created ${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                
+                return 'Created ' + date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            }
+
+            copyToClipboard(url, button) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const originalHTML = button.innerHTML;
+                    button.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L6 11L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied';
+                    setTimeout(() => {
+                        button.innerHTML = originalHTML;
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                });
+            }
+
+            renderCatalogList() {
+                const catalogList = document.getElementById('catalogList');
+                if (!catalogList) return;
+
+                if (this.catalogs.length === 0) {
+                    catalogList.innerHTML = '<div class="catalog-empty-state">No catalogs yet. Create your first catalog to get started.</div>';
+                    return;
+                }
+
+                catalogList.innerHTML = this.catalogs.map(catalog => `
+                    <div class="catalog-card">
+                        <a href="catalog-details.html?id=${catalog.id}" class="catalog-card-link">
+                            <div class="catalog-card-info">
+                                <h3 class="catalog-card-name">${this.escapeHtml(catalog.name)}</h3>
+                                <p class="catalog-card-meta">
+                                    <span class="catalog-url">${this.escapeHtml(catalog.shortUrl || catalog.url)}</span>
+                                    <span class="catalog-meta-divider">•</span>
+                                    <span class="catalog-created">${this.formatDate(catalog.created)}</span>
+                                </p>
+                            </div>
+                        </a>
+                        <button class="catalog-copy-btn" onclick="event.preventDefault(); catalogManager.copyToClipboard('${catalog.shortUrl || catalog.url}', this)">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M3 10V4C3 3.44772 3.44772 3 4 3H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            Copy URL
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            attachEventListeners() {
+                // Get API keys button
+                const getApiKeysBtn = document.getElementById('getApiKeysBtn');
+                if (getApiKeysBtn) {
+                    getApiKeysBtn.addEventListener('click', () => {
+                        window.location.href = 'api-keys.html';
+                    });
+                }
+
+                // Create catalog button
+                const createCatalogBtn = document.getElementById('createCatalogBtn');
+                if (createCatalogBtn) {
+                    createCatalogBtn.addEventListener('click', () => {
+                        // Navigate to catalog details without an ID (new catalog)
+                        window.location.href = 'catalog-details.html';
+                    });
+                }
+            }
+        }
+
+        // Initialize when DOM is ready
+        let catalogManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            catalogManager = new CatalogListManager();
+        });
+    </script>
+</body>
+</html>
+

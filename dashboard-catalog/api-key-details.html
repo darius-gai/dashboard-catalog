@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Dev Dashboard - API Key</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="logo-section">
+                <img src="https://cdn.shopify.com/shopifycloud/shopify/assets/developer_dashboard/DevDashLogo-8818caf32c18eb9446a6b066b404e31fc335ad016860f250a2e431346530e4a5.svg" alt="dev dashboard" class="dev-dash-logo">
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar" data-page="api-keys"></div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Content Header with Back Button -->
+                <div class="content-header-with-back">
+                    <a href="api-keys.html" class="back-button">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                    <h1 class="content-title" id="keyTitle">API Key</h1>
+                </div>
+
+                <!-- API Key Details -->
+                <div class="api-key-details-section">
+                    <div class="api-key-details-header">
+                        <h3 class="api-key-details-title">
+                            API keys
+                            <a href="https://shopify.dev/docs/agents" target="_blank" class="api-key-docs-link">
+                                Docs
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 9L9 3M9 3H3.5M9 3V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </h3>
+                    </div>
+
+                    <!-- Key Details Card -->
+                    <div class="key-detail-card">
+                        <!-- ID Field -->
+                        <div class="key-detail-row">
+                            <label class="key-detail-label">ID</label>
+                            <div class="key-detail-value-group">
+                                <div class="key-detail-value" id="keyId">Loading...</div>
+                                <button class="key-detail-icon-btn" id="copyIdBtn" title="Copy ID">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                                        <path d="M3 10V4C3 3.44772 3.44772 3 4 3H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Secret Field -->
+                        <div class="key-detail-row">
+                            <label class="key-detail-label">Secret</label>
+                            <div class="key-detail-value-group">
+                                <div class="key-detail-secret-container">
+                                    <div class="key-detail-value key-detail-secret" id="keySecret">••••••••••••••••••••••••••••••••••••••••••••••••</div>
+                                    <span class="key-detail-meta" id="keyCreated">Created Nov 19, 2025 at 3:45</span>
+                                </div>
+                                <div class="key-detail-actions">
+                                    <button class="key-detail-icon-btn" id="toggleSecretBtn" title="Show secret">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                                        </svg>
+                                    </button>
+                                    <button class="key-detail-icon-btn" id="copySecretBtn" title="Copy secret">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M3 10V4C3 3.44772 3.44772 3 4 3H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
+                                    <button class="key-detail-rotate-btn" id="rotateBtn">Rotate</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rate Limit Section -->
+                    <div class="rate-limit-card">
+                        <div class="rate-limit-info">
+                            <h4 class="rate-limit-title">Rate limit: 5 requests / second</h4>
+                        </div>
+                        <button class="request-increase-btn">Request increase</button>
+                    </div>
+
+                    <!-- Delete Button -->
+                    <button class="delete-key-btn" id="deleteKeyBtn">Delete API key</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="nav.js"></script>
+    <script>
+        class APIKeyDetailsManager {
+            constructor() {
+                this.tokenId = this.getTokenIdFromURL();
+                this.tokens = this.loadTokens();
+                this.token = this.findToken();
+                this.secretVisible = false;
+                this.init();
+            }
+
+            getTokenIdFromURL() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('id');
+            }
+
+            loadTokens() {
+                const stored = localStorage.getItem('catalogTokens');
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            findToken() {
+                return this.tokens.find(t => t.id === this.tokenId);
+            }
+
+            init() {
+                if (!this.token) {
+                    // Redirect back if token not found
+                    window.location.href = 'api-keys.html';
+                    return;
+                }
+
+                this.displayTokenDetails();
+                this.attachEventListeners();
+            }
+
+            displayTokenDetails() {
+                // Update title
+                document.getElementById('keyTitle').textContent = this.token.name;
+
+                // Display ID
+                document.getElementById('keyId').textContent = this.token.id;
+
+                // Display secret (masked by default)
+                this.updateSecretDisplay();
+
+                // Display creation date
+                const createdDate = new Date(this.token.created);
+                const formattedDate = createdDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                }) + ' at ' + createdDate.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                document.getElementById('keyCreated').textContent = `Created ${formattedDate}`;
+            }
+
+            updateSecretDisplay() {
+                const secretElement = document.getElementById('keySecret');
+                if (this.secretVisible) {
+                    secretElement.textContent = this.token.token;
+                    secretElement.style.fontFamily = 'Monaco, Menlo, monospace';
+                    secretElement.style.fontSize = '12px';
+                    secretElement.style.wordBreak = 'break-all';
+                } else {
+                    secretElement.textContent = '••••••••••••••••••••••••••••••••••••••••••••••••';
+                    secretElement.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    secretElement.style.fontSize = '14px';
+                    secretElement.style.wordBreak = 'normal';
+                }
+            }
+
+            copyToClipboard(text, button) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalHTML = button.innerHTML;
+                    button.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L6 11L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    button.style.color = '#61C9A8';
+                    setTimeout(() => {
+                        button.innerHTML = originalHTML;
+                        button.style.color = '';
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                });
+            }
+
+            toggleSecret() {
+                this.secretVisible = !this.secretVisible;
+                this.updateSecretDisplay();
+                
+                const toggleBtn = document.getElementById('toggleSecretBtn');
+                if (this.secretVisible) {
+                    toggleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L15 15M6.5 6.5C6.18 6.82 6 7.25 6 7.75C6 8.85 6.9 9.75 8 9.75C8.5 9.75 8.93 9.57 9.25 9.25M11.5 11.5C10.5 12.1 9.3 12.5 8 12.5C3.5 12.5 1 7.75 1 7.75C1.8 6.3 2.9 5.1 4.3 4.3M8 2.5C12.5 2.5 15 7.75 15 7.75C14.5 8.6 13.9 9.3 13.2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    toggleBtn.title = 'Hide secret';
+                } else {
+                    toggleBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 8C1 8 3.5 3 8 3C12.5 3 15 8 15 8C15 8 12.5 13 8 13C3.5 13 1 8 1 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>';
+                    toggleBtn.title = 'Show secret';
+                }
+            }
+
+            rotateKey() {
+                if (confirm('Are you sure you want to rotate this key? The old key will stop working immediately.')) {
+                    // Generate new token
+                    this.token.token = this.generateJWTToken();
+                    this.token.lastUsed = new Date().toISOString();
+                    
+                    // Save to localStorage
+                    this.saveTokens();
+                    
+                    // Update display
+                    this.secretVisible = false;
+                    this.updateSecretDisplay();
+                    
+                    alert('Key has been rotated successfully.');
+                }
+            }
+
+            deleteKey() {
+                if (this.tokens.length === 1) {
+                    alert('You must have at least one key. Create a new key before deleting this one.');
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to delete "${this.token.name}"? This action cannot be undone.`)) {
+                    this.tokens = this.tokens.filter(t => t.id !== this.tokenId);
+                    this.saveTokens();
+                    window.location.href = 'api-keys.html';
+                }
+            }
+
+            generateRandomBase64UrlString(length) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            generateJWTToken() {
+                const header = this.generateRandomBase64UrlString(36);
+                const payload = this.generateRandomBase64UrlString(400);
+                const signature = this.generateRandomBase64UrlString(86);
+                return `${header}.${payload}.${signature}`;
+            }
+
+            saveTokens() {
+                localStorage.setItem('catalogTokens', JSON.stringify(this.tokens));
+            }
+
+            attachEventListeners() {
+                // Copy ID button
+                document.getElementById('copyIdBtn').addEventListener('click', () => {
+                    this.copyToClipboard(this.token.id, document.getElementById('copyIdBtn'));
+                });
+
+                // Toggle secret visibility
+                document.getElementById('toggleSecretBtn').addEventListener('click', () => {
+                    this.toggleSecret();
+                });
+
+                // Copy secret button
+                document.getElementById('copySecretBtn').addEventListener('click', () => {
+                    this.copyToClipboard(this.token.token, document.getElementById('copySecretBtn'));
+                });
+
+                // Rotate button
+                document.getElementById('rotateBtn').addEventListener('click', () => {
+                    this.rotateKey();
+                });
+
+                // Delete button
+                document.getElementById('deleteKeyBtn').addEventListener('click', () => {
+                    this.deleteKey();
+                });
+
+                // Request increase button
+                document.querySelector('.request-increase-btn').addEventListener('click', () => {
+                    alert('Contact support to request higher rate limits for your application.');
+                });
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            new APIKeyDetailsManager();
+        });
+    </script>
+
+    <!-- Checkout Coming Soon Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-modal-container">
+            <div class="checkout-modal-header">
+                <h2 class="checkout-modal-title">
+                    Checkout
+                    <span class="checkout-coming-soon-pill">Coming Soon</span>
+                </h2>
+                <button class="checkout-modal-close" onclick="hideCheckoutModal()" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="checkout-modal-body">
+                <img src="https://cdn.shopify.com/b/shopify-brochure2-assets/93d6a423270df1aaf36f348c2ad193d0.png" alt="Checkout Kit preview showing checkout on mobile, tablet and desktop" class="checkout-modal-image" />
+                <div class="checkout-modal-content">
+                    <p class="checkout-modal-description">
+                        Checkout is often the hardest step due to merchant customizations and regulations. 
+                        <span class="checkout-modal-highlight">Shopify's Checkout Kit</span> handles this for you. 
+                        With a few lines of code, you get a high-converting checkout that preserves all your customizations and business rules.
+                    </p>
+                    <div class="checkout-features-list">
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Brand overrides for native look on any platform</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Checkout UI Extensions and Shopify Functions preserved</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Taxes automatically handled</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Compliance simplified (GDPR, CCPA, WCAG, PCI DSS v4)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
