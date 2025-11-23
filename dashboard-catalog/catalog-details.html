@@ -597,22 +597,30 @@
                     // Store the response for copying
                     this.lastResponse = formattedResponse;
 
-                    // Check if we can render a preview
-                    const canRenderPreview = parsedData && 
-                                           parsedData.length > 0 && 
-                                           parsedData[0].products && 
-                                           parsedData[0].products.length > 0;
-
-                    let storeDomain = '';
-                    let productGid = '';
+                    // Collect all products from all items in parsedData
+                    let products = [];
                     let productCountry = 'US';
                     let productLanguage = 'en';
 
-                    if (canRenderPreview) {
-                        const firstProduct = parsedData[0].products[0];
-                        storeDomain = firstProduct.shop?.onlineStoreUrl || '';
-                        productGid = firstProduct.id || '';
+                    if (parsedData && Array.isArray(parsedData)) {
+                        // Flatten all products from all items in parsedData
+                        const allProducts = parsedData.flatMap(item => item.products || []);
+                        
+                        // Filter for unique products by GID
+                        const seenGids = new Set();
+                        products = allProducts.filter(product => {
+                            const gid = product.id;
+                            const availableForSale = product.availableForSale;
+                            if (!gid || seenGids.has(gid) || !availableForSale) {
+                                return false;
+                            }
+                            seenGids.add(gid);
+                            return true;
+                        });
                     }
+
+                    // Check if we can render a preview
+                    const canRenderPreview = products.length > 0;
 
                     // Display response
                     responseDisplay.innerHTML = `<pre style="margin: 0; padding: 0; background: transparent;"><code class="language-json">${this.escapeHtml(formattedResponse)}</code></pre>`;
@@ -629,15 +637,20 @@
                     const renderedPreviewTab = document.getElementById('renderedPreviewTab');
                     const renderedPreviewDisplay = document.getElementById('renderedPreviewDisplay');
                     
-                    if (canRenderPreview && storeDomain && productGid) {
+                    if (canRenderPreview && products.length > 0) {
                         // Show the rendered preview tab
                         renderedPreviewTab.style.display = 'block';
                         
-                        // Populate the rendered preview content
-                        renderedPreviewDisplay.innerHTML = `
-                            <shopify-store store-domain="${this.escapeHtml(storeDomain)}" country="${productCountry}" language="${productLanguage}"></shopify-store>
-                            <div class="product-layout">
+                        // Generate product cards for all products
+                        const productCardsHtml = products.map(product => {
+                            const productGid = product.id || '';
+                            const storeDomain = product.shop?.onlineStoreUrl || '';
+                            
+                            if (!productGid || !storeDomain) return '';
+                            
+                            return `
                                 <div class="product-card">
+                                    <shopify-store store-domain="${this.escapeHtml(storeDomain)}" country="${productCountry}" language="${productLanguage}"></shopify-store>
                                     <shopify-context type="product" gid="${this.escapeHtml(productGid)}">
                                         <template>
                                             <div class="product-card__container">
@@ -663,6 +676,13 @@
                                         </template>
                                     </shopify-context>
                                 </div>
+                            `;
+                        }).join('');
+                        
+                        // Populate the rendered preview content
+                        renderedPreviewDisplay.innerHTML = `
+                            <div class="product-grid">
+                                ${productCardsHtml}
                             </div>
                         `;
                     } else {
@@ -909,27 +929,34 @@
             background: #FFFFFF;
         }
 
-        .product-layout {
-            display: flex;
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
             font-family: 'Inter', sans-serif;
             font-weight: 400;
             font-style: normal;
         }
 
         .product-card {
-            max-width: 80rem;
             background-color: #ffffff;
             display: flex;
             flex-direction: column;
-            gap: 1em;
             border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .product-card__container {
             display: flex;
             flex-direction: column;
-            padding: 1rem;
+            padding: 16px;
             box-sizing: border-box;
+            height: 100%;
         }
 
         .product-card__media {
@@ -946,15 +973,16 @@
         .product-card__details {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 12px;
             width: 100%;
-            margin-top: 0.5rem;
+            margin-top: 12px;
+            flex: 1;
         }
 
         .product-card__info {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 8px;
         }
 
         .product-card__title {
@@ -978,6 +1006,7 @@
             text-transform: uppercase;
             font-size: 0.875rem;
             font-weight: 700;
+            margin-top: auto;
         }
 
         .product-card__product-link {
