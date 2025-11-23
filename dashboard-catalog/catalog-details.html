@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    
+    <!-- Shopify Web Components for Rendered Preview -->
+    <script type="module" src="https://cdn.shopify.com/storefront/web-components.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -208,25 +211,30 @@
                             </div>
                         </div>
 
-                        <!-- Response Section -->
+                        <!-- Response Section with Tabs -->
                         <div class="catalog-response-column">
                             <div class="response-header-bar">
-                                <div class="response-header-left">
-                                    <span class="response-method-badge">GET</span>
-                                    <svg class="response-brackets-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M6 3L2 10L6 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <path d="M14 3L18 10L14 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                    <h3 class="response-title">Response</h3>
+                                <div class="response-tabs">
+                                    <button class="response-tab active" id="responseTab" data-tab="response">
+                                        Response
+                                    </button>
+                                    <button class="response-tab" id="renderedPreviewTab" data-tab="preview" style="display: none;">
+                                        Rendered Preview
+                                    </button>
                                 </div>
                                 <div class="response-header-right">
-                                    <div class="catalog-url-inline">
-                                        <span class="catalog-url-text" id="catalogUrlDisplay">https://discover.shopifyapps.com/global/v1/search?query=</span>
-                                    </div>
-                                    <button class="response-format-btn active">JSON</button>
+                                    <button class="copy-response-btn" id="copyResponseBtn" title="Copy response JSON" style="display: none;">
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <rect x="4.5" y="4.5" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/>
+                                            <path d="M2 9V3C2 2.44772 2.44772 2 3 2H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                        </svg>
+                                        Copy
+                                    </button>
                                 </div>
                             </div>
-                            <div class="response-display" id="responseDisplay">
+                            
+                            <!-- Response Content -->
+                            <div class="response-display tab-content active" id="responseDisplay" data-content="response">
                                 <div class="response-placeholder">
                                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M24 4L4 14L24 24L44 14L24 4Z" fill="#3A3A3A"/>
@@ -236,6 +244,9 @@
                                     <p>Run a request to see the response</p>
                                 </div>
                             </div>
+
+                            <!-- Rendered Preview Content -->
+                            <div class="rendered-preview-display tab-content" id="renderedPreviewDisplay" data-content="preview" style="display: none;"></div>
                         </div>
                     </div>
                 </div>
@@ -498,8 +509,7 @@
             }
 
             updateCatalogUrl() {
-                const url = this.buildCatalogUrl();
-                document.getElementById('catalogUrlDisplay').textContent = url;
+                // Catalog URL display has been removed from the UI
             }
 
             deleteCatalog() {
@@ -518,15 +528,32 @@
 
             async runRequest() {
                 const responseDisplay = document.getElementById('responseDisplay');
+                const copyResponseBtn = document.getElementById('copyResponseBtn');
                 const url = this.buildCatalogUrl();
 
                 if (!this.apiToken) {
                     responseDisplay.innerHTML = '<div class="response-error">Please set an API token in settings (click the gear icon)</div>';
+                    copyResponseBtn.style.display = 'none';
+                    
+                    // Hide rendered preview tab when no token
+                    const renderedPreviewTab = document.getElementById('renderedPreviewTab');
+                    if (renderedPreviewTab) {
+                        renderedPreviewTab.style.display = 'none';
+                    }
+                    this.switchTab('response');
                     return;
                 }
 
                 // Show loading state
                 responseDisplay.innerHTML = '<div class="response-loading">Running request...</div>';
+                copyResponseBtn.style.display = 'none';
+                
+                // Hide rendered preview tab during loading
+                const renderedPreviewTab = document.getElementById('renderedPreviewTab');
+                if (renderedPreviewTab) {
+                    renderedPreviewTab.style.display = 'none';
+                }
+                this.switchTab('response');
 
                 try {
                     // Use the proxy to bypass CORS restrictions
@@ -548,21 +575,43 @@
                     // Get the response text
                     const responseText = await response.text();
                     let formattedResponse;
+                    let parsedData = null;
                     
                     try {
                         // Try to parse and pretty-print JSON
                         const jsonData = JSON.parse(responseText);
-                        formattedResponse = JSON.stringify(jsonData, null, 2);
                         
                         // If the proxy returns a response object with status info, extract it
-                        if (jsonData.status !== undefined) {
-                            if (jsonData.data) {
-                                formattedResponse = JSON.stringify(jsonData.data, null, 2);
-                            }
+                        if (jsonData.status !== undefined && jsonData.data) {
+                            parsedData = JSON.parse(jsonData.data);
+                            formattedResponse = JSON.stringify(parsedData, null, 2);
+                        } else {
+                            parsedData = jsonData;
+                            formattedResponse = JSON.stringify(jsonData, null, 2);
                         }
                     } catch (e) {
                         // If not JSON, display as-is
                         formattedResponse = responseText;
+                    }
+
+                    // Store the response for copying
+                    this.lastResponse = formattedResponse;
+
+                    // Check if we can render a preview
+                    const canRenderPreview = parsedData && 
+                                           parsedData.length > 0 && 
+                                           parsedData[0].products && 
+                                           parsedData[0].products.length > 0;
+
+                    let storeDomain = '';
+                    let productGid = '';
+                    let productCountry = 'US';
+                    let productLanguage = 'en';
+
+                    if (canRenderPreview) {
+                        const firstProduct = parsedData[0].products[0];
+                        storeDomain = firstProduct.shop?.onlineStoreUrl || '';
+                        productGid = firstProduct.id || '';
                     }
 
                     // Display response
@@ -572,9 +621,97 @@
                     responseDisplay.querySelectorAll('pre code').forEach((block) => {
                         hljs.highlightElement(block);
                     });
+
+                    // Show copy button
+                    copyResponseBtn.style.display = 'flex';
+
+                    // Handle rendered preview tab
+                    const renderedPreviewTab = document.getElementById('renderedPreviewTab');
+                    const renderedPreviewDisplay = document.getElementById('renderedPreviewDisplay');
+                    
+                    if (canRenderPreview && storeDomain && productGid) {
+                        // Show the rendered preview tab
+                        renderedPreviewTab.style.display = 'block';
+                        
+                        // Populate the rendered preview content
+                        renderedPreviewDisplay.innerHTML = `
+                            <shopify-store store-domain="${this.escapeHtml(storeDomain)}" country="${productCountry}" language="${productLanguage}"></shopify-store>
+                            <div class="product-layout">
+                                <div class="product-card">
+                                    <shopify-context type="product" gid="${this.escapeHtml(productGid)}">
+                                        <template>
+                                            <div class="product-card__container">
+                                                <div class="product-card__media">
+                                                    <div class="product-card__main-image">
+                                                        <shopify-media width="280" height="280" query="product.selectedOrFirstAvailableVariant.image"></shopify-media>
+                                                    </div>
+                                                </div>
+                                                <div class="product-card__details">
+                                                    <div class="product-card__info">
+                                                        <h2 class="product-card__title">
+                                                            <shopify-data query="product.title"></shopify-data>
+                                                        </h2>
+                                                        <div class="product-card__price">
+                                                            <shopify-money query="product.selectedOrFirstAvailableVariant.price"></shopify-money>
+                                                        </div>
+                                                    </div>
+                                                    <a shopify-attr--href="product.onlineStoreUrl" class="product__link" target="_blank">
+                                                        <div class="product-card__product-link">View product</div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </shopify-context>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Hide the rendered preview tab if no data
+                        renderedPreviewTab.style.display = 'none';
+                        // Make sure we're on the response tab
+                        this.switchTab('response');
+                    }
                 } catch (error) {
                     console.error('Error running API request:', error);
                     responseDisplay.innerHTML = `<div class="response-error">Error: ${this.escapeHtml(error.message)}</div>`;
+                    copyResponseBtn.style.display = 'none';
+                    
+                    // Hide rendered preview tab on error
+                    const renderedPreviewTab = document.getElementById('renderedPreviewTab');
+                    if (renderedPreviewTab) {
+                        renderedPreviewTab.style.display = 'none';
+                    }
+                    this.switchTab('response');
+                }
+            }
+
+            switchTab(tabName) {
+                // Update tab buttons
+                const tabs = document.querySelectorAll('.response-tab');
+                tabs.forEach(tab => {
+                    if (tab.dataset.tab === tabName) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+
+                // Update content visibility
+                const contents = document.querySelectorAll('.tab-content');
+                contents.forEach(content => {
+                    if (content.dataset.content === tabName) {
+                        content.style.display = 'block';
+                    } else {
+                        content.style.display = 'none';
+                    }
+                });
+
+                // Show/hide copy button only on Response tab
+                const copyResponseBtn = document.getElementById('copyResponseBtn');
+                if (tabName === 'response' && this.lastResponse) {
+                    copyResponseBtn.style.display = 'flex';
+                } else {
+                    copyResponseBtn.style.display = 'none';
                 }
             }
 
@@ -590,6 +727,15 @@
             }
 
             attachEventListeners() {
+                // Tab switching
+                document.getElementById('responseTab').addEventListener('click', () => {
+                    this.switchTab('response');
+                });
+                
+                document.getElementById('renderedPreviewTab').addEventListener('click', () => {
+                    this.switchTab('preview');
+                });
+
                 // Save button
                 document.getElementById('saveBtn').addEventListener('click', () => {
                     this.saveCatalog();
@@ -646,6 +792,22 @@
                     });
                 });
 
+                // Copy response JSON button
+                document.getElementById('copyResponseBtn').addEventListener('click', () => {
+                    if (this.lastResponse) {
+                        navigator.clipboard.writeText(this.lastResponse).then(() => {
+                            const btn = document.getElementById('copyResponseBtn');
+                            const originalHTML = btn.innerHTML;
+                            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8L6 11L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Copied';
+                            setTimeout(() => {
+                                btn.innerHTML = originalHTML;
+                            }, 1500);
+                        }).catch(err => {
+                            console.error('Failed to copy response:', err);
+                        });
+                    }
+                });
+
                 // Advanced filters toggle
                 document.getElementById('advancedToggle').addEventListener('click', () => {
                     const advanced = document.getElementById('advancedFilters');
@@ -698,6 +860,143 @@
             new CatalogDetailManager();
         });
     </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+        /* Response Tabs Styles */
+        .response-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .response-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #8E9AAB;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .response-tab:hover {
+            color: #D5E5F5;
+        }
+
+        .response-tab.active {
+            color: #7FB3D5;
+            border-bottom-color: #7FB3D5;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content[data-content="response"] {
+            padding: 20px;
+            background: #1E1E1E;
+        }
+
+        /* Rendered Preview Display Styles */
+        .rendered-preview-display {
+            padding: 24px;
+            background: #FFFFFF;
+        }
+
+        .product-layout {
+            display: flex;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .product-card {
+            max-width: 80rem;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            border-radius: 12px;
+        }
+
+        .product-card__container {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .product-card__media {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .product-card__main-image img {
+            border-radius: 0.5rem;
+        }
+
+        .product-card__details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .product-card__info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .product-card__title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin: 0;
+            color: #2C2C2C;
+        }
+
+        .product-card__price {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #2C2C2C;
+        }
+
+        .product__link {
+            color: #fff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .product-card__product-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            background-color: #000000;
+            border-radius: 0.75rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border: 2px solid black;
+        }
+
+        .product-card__product-link:hover {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid black;
+        }
+    </style>
 
     <!-- Checkout Coming Soon Modal -->
     <div class="checkout-modal" id="checkoutModal">

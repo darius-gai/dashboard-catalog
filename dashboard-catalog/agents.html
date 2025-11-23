@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Dev Dashboard - Agents</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="logo-section">
+                <img src="https://cdn.shopify.com/shopifycloud/shopify/assets/developer_dashboard/DevDashLogo-8818caf32c18eb9446a6b066b404e31fc335ad016860f250a2e431346530e4a5.svg" alt="dev dashboard" class="dev-dash-logo">
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar" data-page="agents"></div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Content Header -->
+                <div class="content-header">
+                    <h1 class="content-title">Agents</h1>
+                    <p class="content-subtitle">Build AI agents that can search hundreds of millions of Shopify products, shop across multiple merchants with a single Universal Cart, and deliver seamless, compliant checkout.</p>
+                </div>
+
+                <!-- Sections Grid -->
+                <div class="sections-grid">
+                    <!-- Catalog Section -->
+                    <div class="section-card section-card-catalog">
+                        <div class="section-content">
+                            <h2 class="section-title section-title-catalog">Shopify Catalog</h2>
+                            <p class="section-description">When buyers ask for products, your agent searches millions of items and displays interactive product cards directly in the chat. Search across hundreds of millions of products with standardized responses clustered by UPI (Universal Product Identifier).</p>
+                            <a href="catalogs.html" class="section-btn">View catalogs →</a>
+                        </div>
+                        <div class="section-illustration">
+                            <img src="https://cdn.shopify.com/shopifycloud/shopify-dev/production/assets/assets/images/marketing-page-heroes/agents-hero-dark-mode-B06Cay3-.png" alt="Catalog illustration" class="section-img">
+                        </div>
+                    </div>
+
+                    <!-- Universal Cart Section -->
+                    <div class="section-card section-card-cart">
+                        <div class="section-content">
+                            <h2 class="section-title section-title-cart">Universal Cart</h2>
+                            <p class="section-description">Buyers can add items from multiple merchants to a single cart, with automatic merchant grouping and unified checkout options. Shop across merchants on behalf of a buyer with a seamless multi-merchant experience.</p>
+                            <a href="universal-cart.html" class="section-btn">View Universal Cart →</a>
+                        </div>
+                        <div class="section-illustration">
+                            <img src="https://shopify.dev/images/docs/apps-mobile-dark-2x.png" alt="Universal Cart illustration" class="section-img">
+                        </div>
+                    </div>
+
+                    <!-- Checkout Kit Section -->
+                    <div class="section-card section-card-checkout">
+                        <div class="section-content">
+                            <h2 class="section-title section-title-checkout">Checkout Kit</h2>
+                            <p class="section-description">Buyers complete secure, merchant-branded checkout experiences directly from your agent interface. Get a high-converting checkout that keeps all your existing customizations and business rules with just a few lines of code.</p>
+                            <a href="#" class="section-btn" onclick="showCheckoutModal(); return false;">Learn more →</a>
+                        </div>
+                        <div class="section-illustration">
+                            <img src="https://shopify.dev/images/docs/headless-mobile-dark-2x.png" alt="Checkout Kit illustration" class="section-img">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Coming Soon Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-modal-container">
+            <div class="checkout-modal-header">
+                <h2 class="checkout-modal-title">
+                    Checkout Kit
+                    <span class="checkout-coming-soon-pill">Coming Soon</span>
+                </h2>
+                <button class="checkout-modal-close" onclick="hideCheckoutModal()" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="checkout-modal-body">
+                <img src="https://cdn.shopify.com/b/shopify-brochure2-assets/93d6a423270df1aaf36f348c2ad193d0.png" alt="Checkout Kit preview showing checkout on mobile, tablet and desktop" class="checkout-modal-image" />
+                <div class="checkout-modal-content">
+                    <p class="checkout-modal-description">
+                        Checkout is often the hardest step due to merchant customizations and regulations. 
+                        <span class="checkout-modal-highlight">Shopify's Checkout Kit</span> handles this for you. 
+                        With a few lines of code, you get a high-converting checkout that preserves all your customizations and business rules.
+                    </p>
+                    <div class="checkout-features-list">
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Brand overrides for native look on any platform</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Checkout UI Extensions and Shopify Functions preserved</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10 C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Taxes automatically handled</span>
+                        </div>
+                        <div class="checkout-feature-item">
+                            <svg class="checkout-feature-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10L9 12L13 8M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="checkout-feature-text">Compliance simplified (GDPR, CCPA, WCAG, PCI DSS v4)</span>
+                        </div>
+                    </div>
+                    <div class="checkout-modal-footer">
+                        <p class="checkout-modal-footer-text">Learn more about <a href="https://shopify.dev/docs/agents#initiate-checkout-with-checkout-kit" target="_blank" class="checkout-modal-link">Checkout Kit</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+</body>
+</html>
+
