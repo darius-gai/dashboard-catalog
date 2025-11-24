@@ -262,6 +262,14 @@
         </svg>
     </button>
 
+    <!-- Floating Universal Cart Button -->
+    <button class="floating-cart-btn" id="floatingCartBtn" title="See results in Universal Cart" style="display: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 18C5.9 18 5.01 18.9 5.01 20C5.01 21.1 5.9 22 7 22C8.1 22 9 21.1 9 20C9 18.9 8.1 18 7 18ZM1 2V4H3L6.6 11.59L5.25 14.04C5.09 14.32 5 14.65 5 15C5 16.1 5.9 17 7 17H19V15H7.42C7.28 15 7.17 14.89 7.17 14.75L7.2 14.63L8.1 13H15.55C16.3 13 16.96 12.59 17.3 11.97L20.88 5.48C20.96 5.34 21 5.17 21 5C21 4.45 20.55 4 20 4H5.21L4.27 2H1ZM17 18C15.9 18 15.01 18.9 15.01 20C15.01 21.1 15.9 22 17 22C18.1 22 19 21.1 19 20C19 18.9 18.1 18 17 18Z" fill="currentColor"/>
+        </svg>
+        <span>See results in Universal Cart</span>
+    </button>
+
     <!-- Floating Settings Panel -->
     <div class="floating-settings-panel" id="floatingSettingsPanel" style="display: none;">
         <div class="floating-panel-header">
@@ -619,6 +627,9 @@
                         });
                     }
 
+                    // Store products for Universal Cart button
+                    this.lastProducts = products;
+
                     // Check if we can render a preview
                     const canRenderPreview = products.length > 0;
 
@@ -640,6 +651,9 @@
                     if (canRenderPreview && products.length > 0) {
                         // Show the rendered preview tab
                         renderedPreviewTab.style.display = 'block';
+                        
+                        // Show the floating Universal Cart button
+                        this.showUniversalCartButton();
                         
                         // Generate product cards for all products
                         const productCardsHtml = products.map(product => {
@@ -690,6 +704,8 @@
                         renderedPreviewTab.style.display = 'none';
                         // Make sure we're on the response tab
                         this.switchTab('response');
+                        // Hide the floating Universal Cart button
+                        this.hideUniversalCartButton();
                     }
                 } catch (error) {
                     console.error('Error running API request:', error);
@@ -702,6 +718,8 @@
                         renderedPreviewTab.style.display = 'none';
                     }
                     this.switchTab('response');
+                    // Hide the floating Universal Cart button
+                    this.hideUniversalCartButton();
                 }
             }
 
@@ -746,6 +764,57 @@
                 return text.replace(/[&<>"']/g, m => map[m]);
             }
 
+            showUniversalCartButton() {
+                const btn = document.getElementById('floatingCartBtn');
+                if (btn) {
+                    btn.style.display = 'flex';
+                }
+            }
+
+            hideUniversalCartButton() {
+                const btn = document.getElementById('floatingCartBtn');
+                if (btn) {
+                    btn.style.display = 'none';
+                }
+            }
+
+            redirectToUniversalCart() {
+                if (!this.lastProducts || this.lastProducts.length === 0) {
+                    alert('No products available');
+                    return;
+                }
+
+                // Get the first 5 products
+                const productsToSend = this.lastProducts.slice(0, 5);
+                
+                // Extract variant information from selectedProductVariant.id
+                const variantData = productsToSend.map(product => {
+                    const variantGid = product.selectedProductVariant?.id;
+                    if (!variantGid) return null;
+                    
+                    // Parse the GID format: gid://shopify/ProductVariant/43374560706751?shop=40951447713
+                    const match = variantGid.match(/gid:\/\/shopify\/ProductVariant\/(\d+)\?shop=(\d+)/i);
+                    if (!match) return null;
+                    
+                    return {
+                        variantId: match[1],
+                        shopId: match[2]
+                    };
+                }).filter(item => item !== null);
+
+                if (variantData.length === 0) {
+                    alert('No valid product variants found');
+                    return;
+                }
+
+                // Encode the data as URL parameters
+                const params = new URLSearchParams();
+                params.set('products', JSON.stringify(variantData));
+                
+                // Redirect to Universal Cart page
+                window.location.href = `universal-cart.html?${params.toString()}`;
+            }
+
             attachEventListeners() {
                 // Tab switching
                 document.getElementById('responseTab').addEventListener('click', () => {
@@ -782,6 +851,11 @@
                     panel.style.display = 'block';
                     // Load current token
                     document.getElementById('apiTokenInput').value = this.apiToken;
+                });
+
+                // Floating Universal Cart button
+                document.getElementById('floatingCartBtn').addEventListener('click', () => {
+                    this.redirectToUniversalCart();
                 });
 
                 // Close settings panel
@@ -1024,6 +1098,39 @@
             background: #ffffff;
             color: #000000;
             border: 2px solid black;
+        }
+
+        /* Floating Universal Cart Button */
+        .floating-cart-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            background: #5B9C8B;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(91, 156, 139, 0.3);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        .floating-cart-btn:hover {
+            background: #4A8A78;
+            box-shadow: 0 6px 24px rgba(91, 156, 139, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .floating-cart-btn svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
         }
     </style>
 

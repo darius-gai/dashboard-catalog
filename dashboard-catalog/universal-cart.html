@@ -187,8 +187,30 @@
 
             init() {
                 this.attachEventListeners();
-                // Add one product line by default
-                this.addProductLine();
+                
+                // Check for URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const productsParam = urlParams.get('products');
+                
+                if (productsParam) {
+                    try {
+                        const products = JSON.parse(productsParam);
+                        // Pre-fill product lines from URL parameters
+                        this.loadProductsFromParams(products);
+                        
+                        // Automatically run the cart creation after a short delay
+                        setTimeout(() => {
+                            this.createCart();
+                        }, 500);
+                    } catch (e) {
+                        console.error('Error parsing products parameter:', e);
+                        // Add one product line by default if parsing fails
+                        this.addProductLine();
+                    }
+                } else {
+                    // Add one product line by default
+                    this.addProductLine();
+                }
             }
 
             attachEventListeners() {
@@ -285,6 +307,31 @@
                 if (element) {
                     element.remove();
                 }
+            }
+
+            loadProductsFromParams(products) {
+                // Add and populate product lines for each product
+                products.forEach((product, index) => {
+                    this.addProductLine();
+                    
+                    // Get the inputs for this line
+                    const lines = document.querySelectorAll('.product-line-group');
+                    if (lines[index]) {
+                        const shopIdInput = lines[index].querySelector('.shop-id-input');
+                        const variantIdInput = lines[index].querySelector('.variant-id-input');
+                        const quantityInput = lines[index].querySelector('.quantity-input');
+                        
+                        if (shopIdInput && product.shopId) {
+                            shopIdInput.value = product.shopId;
+                        }
+                        if (variantIdInput && product.variantId) {
+                            variantIdInput.value = product.variantId;
+                        }
+                        if (quantityInput) {
+                            quantityInput.value = product.quantity || 1;
+                        }
+                    }
+                });
             }
 
             collectProductLines() {
