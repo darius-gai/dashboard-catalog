@@ -89,27 +89,15 @@
                                 </div>
                             </div>
 
-                            <div class="filter-group-row">
                             <div class="filter-group">
-                                    <label class="filter-label">Ships to</label>
-                                    <select id="ships_to" class="filter-input">
-                                        <option value="">Select country</option>
-                                        <option value="US">US</option>
-                                        <option value="CA">CA</option>
-                                        <option value="GB">GB</option>
-                                        <option value="AU">AU</option>
-                                    </select>
-                            </div>
-                            <div class="filter-group">
-                                    <label class="filter-label">Ships from</label>
-                                    <select id="ships_from" class="filter-input">
-                                        <option value="">Select country</option>
-                                        <option value="US">US</option>
-                                        <option value="CA">CA</option>
-                                        <option value="GB">GB</option>
-                                        <option value="AU">AU</option>
-                                    </select>
-                                </div>
+                                <label class="filter-label">Ships to</label>
+                                <select id="ships_to" class="filter-input">
+                                    <option value="">Select country</option>
+                                    <option value="US">US</option>
+                                    <option value="CA">CA</option>
+                                    <option value="GB">GB</option>
+                                    <option value="AU">AU</option>
+                                </select>
                             </div>
 
                             <div class="filter-group">
@@ -159,13 +147,6 @@
                                     <label class="filter-checkbox-label">
                                         <input type="checkbox" id="available_for_sale" class="filter-checkbox">
                                         <span class="checkbox-text">Only include products that are available for sale in results</span>
-                                    </label>
-                                </div>
-
-                                <div class="filter-checkbox-group">
-                                    <label class="filter-checkbox-label">
-                                        <input type="checkbox" id="include_secondhand" class="filter-checkbox">
-                                        <span class="checkbox-text">Include secondhand products in results</span>
                                     </label>
                                 </div>
                             </div>
@@ -423,9 +404,9 @@
 
                 // Collect all filter values (excluding query - it's in Request section)
                 const filters = {};
-                const filterIds = ['min_price', 'max_price', 'ships_to', 'ships_from', 'limit', 
+                const filterIds = ['min_price', 'max_price', 'ships_to', 'limit', 
                                    'categories', 'shop_ids', 'organization_ids'];
-                const checkboxIds = ['available_for_sale', 'include_secondhand'];
+                const checkboxIds = ['available_for_sale'];
                 
                 filterIds.forEach(id => {
                     const element = document.getElementById(id);
@@ -495,9 +476,9 @@
                 const params = new URLSearchParams();
                 
                 // Include query and all filter IDs for the URL
-                const textIds = ['query', 'min_price', 'max_price', 'ships_to', 'ships_from', 'limit', 
+                const textIds = ['query', 'min_price', 'max_price', 'ships_to', 'limit', 
                                 'categories', 'shop_ids', 'organization_ids'];
-                const checkboxIds = ['available_for_sale', 'include_secondhand'];
+                const checkboxIds = ['available_for_sale'];
                 
                 textIds.forEach(id => {
                     const element = document.getElementById(id);
